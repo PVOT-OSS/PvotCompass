@@ -1,3 +1,5 @@
+import com.android.build.gradle.internal.api.BaseVariantOutputImpl
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -62,6 +64,19 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+
+    applicationVariants.all {
+        val variant = this
+        val flavorName = when (variant.flavorName) {
+            "foss" -> "fdroid"
+            else -> variant.flavorName
+        }
+        outputs.all {
+            val output = this as BaseVariantOutputImpl
+            output.outputFileName =
+                "Compass-v${variant.versionName}-${variant.buildType.name}-${flavorName}.apk"
+        }
     }
 }
 
