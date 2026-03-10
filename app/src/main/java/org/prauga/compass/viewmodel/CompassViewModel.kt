@@ -7,19 +7,14 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.location.Geocoder
-import android.os.Looper
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationRequest
-import com.google.android.gms.location.LocationResult
-import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import org.prauga.compass.location.LocationProvider
+import org.prauga.compass.location.LocationProviderImpl
 import java.util.Locale
 
 class CompassViewModel(
@@ -39,10 +34,6 @@ class CompassViewModel(
     private val _cumulativeHeading = MutableStateFlow(0f)
     val cumulativeHeading: StateFlow<Float> = _cumulativeHeading
 
-    // Altitude
-    private val fusedLocationClient: FusedLocationProviderClient =
-        LocationServices.getFusedLocationProviderClient(context)
-
     private val _altitude = MutableStateFlow<Double?>(null)
     val altitude: StateFlow<Double?> = _altitude
 
@@ -55,19 +46,30 @@ class CompassViewModel(
     private val _placeName = MutableStateFlow<String?>(null)
     val placeName: StateFlow<String?> = _placeName
 
+    private val locationProvider: LocationProvider = LocationProviderImpl(context)
     private val geocoder = Geocoder(context, Locale.getDefault())
 
-    private val locationCallback = object : LocationCallback() {
-        override fun onLocationResult(result: LocationResult) {
-            result.lastLocation?.let { location ->
-                _latitude.value = location.latitude
-                _longitude.value = location.longitude
-                if (location.hasAltitude()) {
-                    _altitude.value = location.altitude
-                }
-                reverseGeocode(location.latitude, location.longitude)
-            }
+    fun start() {
+        sensorManager.registerListener(
+            this,
+            rotationSensor,
+            SensorManager.SENSOR_DELAY_UI
+        )
+    }
+
+    @SuppressLint("MissingPermission")
+    fun startLocationUpdates() {
+        locationProvider.start { lat, lng, alt ->
+            _latitude.value = lat
+            _longitude.value = lng
+            if (alt != null) _altitude.value = alt
+            reverseGeocode(lat, lng)
         }
+    }
+
+    fun stop() {
+        sensorManager.unregisterListener(this)
+        locationProvider.stop()
     }
 
     private fun reverseGeocode(lat: Double, lng: Double) {
@@ -86,30 +88,6 @@ class CompassViewModel(
                 // Geocoding unavailable
             }
         }
-    }
-
-    fun start() {
-        sensorManager.registerListener(
-            this,
-            rotationSensor,
-            SensorManager.SENSOR_DELAY_UI
-        )
-    }
-
-    @SuppressLint("MissingPermission")
-    fun startLocationUpdates() {
-        val locationRequest = LocationRequest.Builder(
-            Priority.PRIORITY_HIGH_ACCURACY, 5000L
-        ).setMinUpdateIntervalMillis(2000L).build()
-
-        fusedLocationClient.requestLocationUpdates(
-            locationRequest, locationCallback, Looper.getMainLooper()
-        )
-    }
-
-    fun stop() {
-        sensorManager.unregisterListener(this)
-        fusedLocationClient.removeLocationUpdates(locationCallback)
     }
 
     override fun onSensorChanged(event: SensorEvent) {

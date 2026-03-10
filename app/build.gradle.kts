@@ -4,6 +4,13 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
+val toml = rootProject.file("gradle/libs.versions.toml").readText()
+val playServicesLocationVersion: String? = if (toml.contains("play-services-location")) {
+    toml.lines()
+        .firstOrNull { it.trimStart().startsWith("playServicesLocation") }
+        ?.substringAfter('"')?.substringBefore('"')
+} else null
+
 val versionMajor: Int by rootProject.extra
 val versionMinor: Int by rootProject.extra
 val versionPatch: Int by rootProject.extra
@@ -46,6 +53,12 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+    flavorDimensions += "distribution"
+    productFlavors {
+        create("gms") { dimension = "distribution" }
+        create("foss") { dimension = "distribution" }
+    }
+
     buildFeatures {
         compose = true
         buildConfig = true
@@ -58,7 +71,9 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.compose)
 
     // Location
-    implementation(libs.play.services.location)
+    playServicesLocationVersion?.let {
+        add("gmsImplementation", "com.google.android.gms:play-services-location:$it")
+    }
 
 
     implementation(libs.androidx.core.ktx)
