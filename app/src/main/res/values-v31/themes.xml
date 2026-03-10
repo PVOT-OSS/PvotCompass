@@ -2,5 +2,6 @@
 <resources>
 
     <style name="Theme.Compass" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowSplashScreenBackground">#000000</item>
     </style>
 </resources>
