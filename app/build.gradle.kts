@@ -57,8 +57,14 @@ android {
     }
     flavorDimensions += "distribution"
     productFlavors {
-        create("gms") { dimension = "distribution" }
-        create("foss") { dimension = "distribution" }
+        create("gms") {
+            dimension = "distribution"
+            buildConfigField("boolean", "SHOW_LOCATION_INFO", "true")
+        }
+        create("foss") {
+            dimension = "distribution"
+            buildConfigField("boolean", "SHOW_LOCATION_INFO", "false")
+        }
     }
 
     buildFeatures {

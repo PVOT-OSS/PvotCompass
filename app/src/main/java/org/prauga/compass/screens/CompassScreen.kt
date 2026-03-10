@@ -3,6 +3,7 @@ package org.prauga.compass.screens
 import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import org.prauga.compass.BuildConfig
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -43,6 +44,7 @@ fun CompassScreen(viewModel: CompassViewModel) {
     val latitude by viewModel.latitude.collectAsState()
     val longitude by viewModel.longitude.collectAsState()
     val placeName by viewModel.placeName.collectAsState()
+    val showLocationInfo = BuildConfig.SHOW_LOCATION_INFO
     val animatedHeading by animateFloatAsState(
         targetValue = cumulativeHeading,
         animationSpec = tween(durationMillis = 300, easing = LinearOutSlowInEasing)
@@ -70,7 +72,9 @@ fun CompassScreen(viewModel: CompassViewModel) {
 
     LaunchedEffect(Unit) {
         viewModel.start()
-        permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+        if (showLocationInfo) {
+            permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
     }
     DisposableEffect(Unit) {
         onDispose { viewModel.stop() }
@@ -98,7 +102,7 @@ fun CompassScreen(viewModel: CompassViewModel) {
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center
         )
-        if (locationGranted) {
+        if (showLocationInfo && locationGranted) {
             // Coordinates in DMS
             val lat = latitude
             val lng = longitude
