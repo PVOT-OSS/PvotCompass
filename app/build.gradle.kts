@@ -82,7 +82,7 @@ android {
         outputs.all {
             val output = this as BaseVariantOutputImpl
             output.outputFileName =
-                "Compass-v${variant.versionName}-${variant.buildType.name}-${flavorName}.apk"
+                "PvotCompass-v${variant.versionName}-${variant.buildType.name}-${flavorName}.apk"
         }
     }
 }
