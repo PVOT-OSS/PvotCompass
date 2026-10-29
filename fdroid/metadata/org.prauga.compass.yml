@@ -1,0 +1,31 @@
+# SPDX-FileCopyrightText: Saalim Quadri <danascape@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+PackageName: org.prauga.compass
+Name: Compass
+Summary: A clean, ad-free compass with your coordinates and a home widget
+License: GPL-3.0-or-later
+AuthorName: Saalim Quadri
+SourceCode: https://github.com/PVOT-OSS/PvotCompass
+IssueTracker: https://github.com/PVOT-OSS/PvotCompass/issues
+WebSite: ""
+Categories:
+  - Navigation
+CurrentVersion: "1.0.0"
+CurrentVersionCode: 10000
+Description: |
+  Compass is a simple, precise compass with a clean black dial.
+  It shows your heading with a rotating dial and a haptic tick every 30°,
+  works in portrait and landscape on phones, tablets and foldables, and
+  adds a home screen widget.
+
+RepoType: git
+Repo: https://github.com/PVOT-OSS/PvotCompass.git
+
+Builds:
+  - versionName: 1.0.0
+    versionCode: 10000
+    commit: v1.0.0
+    subdir: app
+    gradle:
+      - foss
