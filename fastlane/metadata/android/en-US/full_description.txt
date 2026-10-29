@@ -1,0 +1,23 @@
+Compass is a simple, precise compass with a clean black dial and nothing in the way.
+
+Point your phone and read your heading at a glance: a large degree readout with the direction (N, NE, E, …), a smooth rotating dial with a mark every 2° and a red north arrow. A gentle haptic tick every 30° lets you feel the turn without looking.
+
+Where you are
+• Your coordinates in degrees, minutes and seconds
+• The name of the place you are in
+• Your elevation above sea level
+
+Built for every screen
+• Works in portrait and landscape, with the heading corrected for how you hold the device
+• Layouts for phones, tablets and foldables
+
+Home screen widget
+• The compass dial with your last known location, one tap away from the full app
+• Updates only when you open the app, so it costs no battery
+
+Private and open
+• No ads, no accounts, no tracking
+• Location is used only to show your coordinates, place and elevation; the compass works without it
+• Free and open source under the GPL-3.0-or-later licence: github.com/PVOT-OSS/PvotCompass
+
+Compass shows magnetic north. Keep the phone away from magnets and metal, and move it in a figure eight if the heading seems off.
