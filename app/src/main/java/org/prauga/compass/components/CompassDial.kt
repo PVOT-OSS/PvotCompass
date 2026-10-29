@@ -34,13 +34,14 @@ fun CompassDial(heading: Float, modifier: Modifier = Modifier) {
         // Center cross
         Canvas(modifier = Modifier.fillMaxSize()) { drawDialCenter() }
 
-        // Static heading line
+        // Static heading line, kept below the degree labels so it never covers them
         Canvas(modifier = Modifier.fillMaxSize()) {
-            val ringR = size.minDimension / 2 * 0.78f
+            val outerR = size.minDimension / 2
+            val ringR = outerR * 0.78f
             drawLine(
                 color = Color.White,
-                start = Offset(center.x, 0f),
-                end = Offset(center.x, center.y - ringR),
+                start = Offset(center.x, center.y - outerR * 0.88f),
+                end = Offset(center.x, center.y - ringR + 16.dp.toPx()),
                 strokeWidth = 3.dp.toPx(),
             )
         }
