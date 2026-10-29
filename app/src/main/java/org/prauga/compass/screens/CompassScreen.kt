@@ -22,6 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,7 +52,8 @@ fun CompassScreen(viewModel: CompassViewModel) {
     )
 
     // Location permission
-    var locationGranted by remember { mutableStateOf(false) }
+    var locationGranted by rememberSaveable { mutableStateOf(false) }
+    var locationRequested by rememberSaveable { mutableStateOf(false) }
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
@@ -73,7 +75,12 @@ fun CompassScreen(viewModel: CompassViewModel) {
     LaunchedEffect(Unit) {
         viewModel.start()
         if (showLocationInfo) {
-            permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+            if (locationGranted) {
+                viewModel.startLocationUpdates()
+            } else if (!locationRequested) {
+                locationRequested = true
+                permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+            }
         }
     }
     DisposableEffect(Unit) {

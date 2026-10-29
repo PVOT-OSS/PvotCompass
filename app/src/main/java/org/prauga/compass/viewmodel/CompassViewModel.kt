@@ -1,13 +1,14 @@
 package org.prauga.compass.viewmodel
 
 import android.annotation.SuppressLint
+import android.app.Application
 import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.location.Geocoder
-import androidx.lifecycle.ViewModel
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,11 +19,11 @@ import org.prauga.compass.location.LocationProviderImpl
 import java.util.Locale
 
 class CompassViewModel(
-    context: Context
-) : ViewModel(), SensorEventListener {
+    application: Application
+) : AndroidViewModel(application), SensorEventListener {
 
     private val sensorManager =
-        context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+        application.getSystemService(Context.SENSOR_SERVICE) as SensorManager
 
     private val rotationSensor =
         sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
@@ -46,8 +47,8 @@ class CompassViewModel(
     private val _placeName = MutableStateFlow<String?>(null)
     val placeName: StateFlow<String?> = _placeName
 
-    private val locationProvider: LocationProvider = LocationProviderImpl(context)
-    private val geocoder = Geocoder(context, Locale.getDefault())
+    private val locationProvider: LocationProvider = LocationProviderImpl(application)
+    private val geocoder = Geocoder(application, Locale.getDefault())
 
     fun start() {
         sensorManager.registerListener(
