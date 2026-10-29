@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
@@ -200,6 +201,8 @@ private fun CompassReadings(
             color = Color.White,
             fontSize = headingFontSize,
             fontWeight = FontWeight.Bold,
+            // Tabular figures keep the readout from shifting as digits change
+            style = LocalTextStyle.current.copy(fontFeatureSettings = "tnum"),
             textAlign = TextAlign.Center,
         )
         if (showLocation) {
