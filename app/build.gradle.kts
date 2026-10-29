@@ -1,8 +1,8 @@
-import com.android.build.gradle.internal.api.BaseVariantOutputImpl
+import com.android.build.api.artifact.SingleArtifact
+import com.android.build.api.variant.BuiltArtifactsLoader
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
 }
 
@@ -13,22 +13,22 @@ val playServicesLocationVersion: String? = if (toml.contains("play-services-loca
         ?.substringAfter('"')?.substringBefore('"')
 } else null
 
-val versionMajor: Int by rootProject.extra
-val versionMinor: Int by rootProject.extra
-val versionPatch: Int by rootProject.extra
-val computedVersionCode: Int by rootProject.extra
-val computedVersionName: String by rootProject.extra
+val versionMajor = rootProject.extra["versionMajor"] as Int
+val versionMinor = rootProject.extra["versionMinor"] as Int
+val versionPatch = rootProject.extra["versionPatch"] as Int
+val computedVersionCode = rootProject.extra["computedVersionCode"] as Int
+val computedVersionName = rootProject.extra["computedVersionName"] as String
 
 android {
     namespace = "org.prauga.compass"
     compileSdk {
-        version = release(36)
+        version = release(37)
     }
 
     defaultConfig {
         applicationId = "org.prauga.compass"
         minSdk = 30
-        targetSdk = 36
+        targetSdk = 37
         versionCode = computedVersionCode
         versionName = computedVersionName
 
@@ -53,9 +53,6 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    kotlinOptions {
-        jvmTarget = "11"
-    }
     flavorDimensions += "distribution"
     productFlavors {
         create("gms") {
@@ -72,18 +69,48 @@ android {
         compose = true
         buildConfig = true
     }
+}
 
-    applicationVariants.all {
-        val variant = this
+abstract class CopyApk : DefaultTask() {
+    @get:InputDirectory
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val input: DirectoryProperty
+
+    @get:OutputDirectory
+    abstract val output: DirectoryProperty
+
+    @get:Internal
+    abstract val builtArtifactsLoader: Property<BuiltArtifactsLoader>
+
+    @get:Input
+    abstract val baseName: Property<String>
+
+    @TaskAction
+    fun taskAction() {
+        val outputDir = output.get().asFile
+        outputDir.deleteRecursively()
+        outputDir.mkdirs()
+
+        val builtArtifacts = builtArtifactsLoader.get().load(input.get())
+            ?: throw GradleException("Cannot load APKs")
+        builtArtifacts.elements.forEach { artifact ->
+            File(artifact.outputFile).copyTo(File(outputDir, "${baseName.get()}.apk"))
+        }
+    }
+}
+
+androidComponents {
+    onVariants { variant ->
         val flavorName = when (variant.flavorName) {
             "foss" -> "fdroid"
             else -> variant.flavorName
         }
-        outputs.all {
-            val output = this as BaseVariantOutputImpl
-            output.outputFileName =
-                "PvotCompass-v${variant.versionName}-${variant.buildType.name}-${flavorName}.apk"
+        val copyApk = tasks.register<CopyApk>("copy${variant.name.replaceFirstChar { it.uppercase() }}Apk") {
+            output.set(layout.buildDirectory.dir("outputs/apk/renamed/${variant.name}"))
+            builtArtifactsLoader.set(variant.artifacts.getBuiltArtifactsLoader())
+            baseName.set("PvotCompass-v$computedVersionName-${variant.buildType}-$flavorName")
         }
+        variant.artifacts.use(copyApk).wiredWith { it.input }.toListenTo(SingleArtifact.APK)
     }
 }
 
