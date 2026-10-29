@@ -8,12 +8,17 @@ import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -31,8 +36,12 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Devices
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.window.core.layout.WindowSizeClass
 import org.prauga.compass.components.CompassDial
 import org.prauga.compass.viewmodel.CompassViewModel
 
@@ -87,37 +96,115 @@ fun CompassScreen(viewModel: CompassViewModel) {
         onDispose { viewModel.stop() }
     }
 
-    Column(
+    CompassLayout(
+        dialHeading = animatedHeading,
+        heading = heading,
+        showLocation = showLocationInfo && locationGranted,
+        latitude = latitude,
+        longitude = longitude,
+        placeName = placeName,
+        altitude = altitude
+    )
+}
+
+@Composable
+private fun CompassLayout(
+    dialHeading: Float,
+    heading: Float,
+    showLocation: Boolean,
+    latitude: Double?,
+    longitude: Double?,
+    placeName: String?,
+    altitude: Double?
+) {
+    val windowSizeClass = currentWindowAdaptiveInfoV2().windowSizeClass
+    val compactHeight =
+        !windowSizeClass.isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND)
+    val expandedWidth =
+        windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND)
+    val expandedHeight =
+        windowSizeClass.isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_EXPANDED_LOWER_BOUND)
+    val large = !compactHeight &&
+        windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
+    val sideBySide = compactHeight || (expandedWidth && !expandedHeight)
+
+    val maxDialSize = if (large) 520.dp else 360.dp
+    val headingFontSize = if (large) 56.sp else 42.sp
+    val detailFontSize = if (large) 22.sp else 18.sp
+
+    BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .background(Color.Black)
+            .safeDrawingPadding()
     ) {
-        Spacer(modifier = Modifier.weight(1f))
+        val dialSize = if (sideBySide) {
+            minOf(maxHeight * 0.85f, maxWidth * 0.5f, maxDialSize)
+        } else {
+            minOf(maxWidth * 0.9f, maxHeight * 0.6f, maxDialSize)
+        }
+        val readings = @Composable {
+            CompassReadings(
+                heading = heading,
+                showLocation = showLocation,
+                latitude = latitude,
+                longitude = longitude,
+                placeName = placeName,
+                altitude = altitude,
+                headingFontSize = headingFontSize,
+                detailFontSize = detailFontSize
+            )
+        }
 
-        CompassDial(
-            heading = animatedHeading,
-            modifier = Modifier.size(340.dp)
-        )
+        if (sideBySide) {
+            Row(
+                modifier = Modifier.fillMaxSize(),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                CompassDial(heading = dialHeading, modifier = Modifier.size(dialSize))
+                readings()
+            }
+        } else {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                CompassDial(heading = dialHeading, modifier = Modifier.size(dialSize))
+                Spacer(modifier = Modifier.height(24.dp))
+                readings()
+            }
+        }
+    }
+}
 
-        Spacer(modifier = Modifier.height(24.dp))
-
+@Composable
+private fun CompassReadings(
+    heading: Float,
+    showLocation: Boolean,
+    latitude: Double?,
+    longitude: Double?,
+    placeName: String?,
+    altitude: Double?,
+    headingFontSize: TextUnit,
+    detailFontSize: TextUnit
+) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             text = "${heading.toInt()}° ${direction(heading)}",
             color = Color.White,
-            fontSize = 42.sp,
+            fontSize = headingFontSize,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center
         )
-        if (showLocationInfo && locationGranted) {
+        if (showLocation) {
             // Coordinates in DMS
-            val lat = latitude
-            val lng = longitude
-            if (lat != null && lng != null) {
+            if (latitude != null && longitude != null) {
                 Text(
-                    text = "${toDms(lat, "N", "S")} ${toDms(lng, "E", "W")}",
+                    text = "${toDms(latitude, "N", "S")} ${toDms(longitude, "E", "W")}",
                     color = Color.White.copy(alpha = 0.7f),
-                    fontSize = 18.sp,
+                    fontSize = detailFontSize,
                     textAlign = TextAlign.Center
                 )
             }
@@ -126,7 +213,7 @@ fun CompassScreen(viewModel: CompassViewModel) {
                 Text(
                     text = it,
                     color = Color.White.copy(alpha = 0.7f),
-                    fontSize = 18.sp,
+                    fontSize = detailFontSize,
                     textAlign = TextAlign.Center
                 )
             }
@@ -136,13 +223,28 @@ fun CompassScreen(viewModel: CompassViewModel) {
             Text(
                 text = altText,
                 color = Color.White.copy(alpha = 0.7f),
-                fontSize = 18.sp,
+                fontSize = detailFontSize,
                 textAlign = TextAlign.Center
             )
         }
-
-        Spacer(modifier = Modifier.weight(1f))
     }
+}
+
+@Preview(name = "Phone", device = Devices.PHONE)
+@Preview(name = "Phone landscape", device = "spec:width=891dp,height=411dp")
+@Preview(name = "Foldable", device = Devices.FOLDABLE)
+@Preview(name = "Tablet", device = Devices.TABLET)
+@Composable
+private fun CompassLayoutPreview() {
+    CompassLayout(
+        dialHeading = 297f,
+        heading = 297f,
+        showLocation = true,
+        latitude = 51.4779,
+        longitude = -0.0015,
+        placeName = "Greenwich, England",
+        altitude = 46.0
+    )
 }
 
 private fun direction(deg: Float): String {
