@@ -75,6 +75,11 @@ android {
         compose = true
         buildConfig = true
     }
+
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
+    }
 }
 
 abstract class CopyApk : DefaultTask() {
