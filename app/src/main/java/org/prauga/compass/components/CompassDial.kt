@@ -21,9 +21,12 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.dp
 import kotlin.math.cos
 import kotlin.math.sin
+
+private val NORTH_RED = Color(0xFFFF3B30)
 
 @Composable
 fun CompassDial(heading: Float, modifier: Modifier = Modifier) {
@@ -115,6 +118,7 @@ fun DrawScope.drawDialFace(heading: Float) {
         val nCanvas = drawContext.canvas.nativeCanvas
         nCanvas.save()
         nCanvas.rotate(heading, x, y)
+        cardinalPaint.color = if (deg == 0) NORTH_RED.toArgb() else android.graphics.Color.WHITE
         nCanvas.drawText(label, x, y - textOffset, cardinalPaint)
         nCanvas.restore()
     }
@@ -131,7 +135,7 @@ fun DrawScope.drawDialFace(heading: Float) {
                 lineTo(center.x + arrowHalfW, arrowBase)
                 close()
             },
-        color = Color(0xFFFF3B30),
+        color = NORTH_RED,
     )
 }
 
