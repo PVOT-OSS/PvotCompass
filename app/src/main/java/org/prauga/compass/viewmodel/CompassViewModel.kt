@@ -7,7 +7,10 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.hardware.display.DisplayManager
 import android.location.Geocoder
+import android.view.Display
+import android.view.Surface
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -24,6 +27,9 @@ class CompassViewModel(
 
     private val sensorManager =
         application.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+
+    private val displayManager =
+        application.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
 
     private val rotationSensor =
         sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
@@ -95,8 +101,17 @@ class CompassViewModel(
         val rotationMatrix = FloatArray(9)
         SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values)
 
+        val (axisX, axisY) = when (displayManager.getDisplay(Display.DEFAULT_DISPLAY)?.rotation) {
+            Surface.ROTATION_90 -> SensorManager.AXIS_Y to SensorManager.AXIS_MINUS_X
+            Surface.ROTATION_180 -> SensorManager.AXIS_MINUS_X to SensorManager.AXIS_MINUS_Y
+            Surface.ROTATION_270 -> SensorManager.AXIS_MINUS_Y to SensorManager.AXIS_X
+            else -> SensorManager.AXIS_X to SensorManager.AXIS_Y
+        }
+        val remappedMatrix = FloatArray(9)
+        SensorManager.remapCoordinateSystem(rotationMatrix, axisX, axisY, remappedMatrix)
+
         val orientationAngles = FloatArray(3)
-        SensorManager.getOrientation(rotationMatrix, orientationAngles)
+        SensorManager.getOrientation(remappedMatrix, orientationAngles)
 
         val azimuthRad = orientationAngles[0]
         val azimuthDeg = (Math.toDegrees(azimuthRad.toDouble()) + 360) % 360
