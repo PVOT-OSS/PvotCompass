@@ -26,27 +26,13 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 @Composable
-fun CompassDial(
-    heading: Float,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier,
-        contentAlignment = Alignment.Center
-    ) {
+fun CompassDial(heading: Float, modifier: Modifier = Modifier) {
+    Box(modifier = modifier, contentAlignment = Alignment.Center) {
         // Rotating layer
-        Canvas(
-            modifier = Modifier
-                .fillMaxSize()
-                .rotate(-heading)
-        ) {
-            drawDialFace(heading)
-        }
+        Canvas(modifier = Modifier.fillMaxSize().rotate(-heading)) { drawDialFace(heading) }
 
         // Center cross
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            drawDialCenter()
-        }
+        Canvas(modifier = Modifier.fillMaxSize()) { drawDialCenter() }
 
         // Static heading line
         Canvas(modifier = Modifier.fillMaxSize()) {
@@ -55,7 +41,7 @@ fun CompassDial(
                 color = Color.White,
                 start = Offset(center.x, 0f),
                 end = Offset(center.x, center.y - ringR),
-                strokeWidth = 3.dp.toPx()
+                strokeWidth = 3.dp.toPx(),
             )
         }
     }
@@ -68,11 +54,7 @@ fun DrawScope.drawDialFace(heading: Float) {
     val center = center
 
     // Outer ring
-    drawCircle(
-        color = Color.White,
-        radius = ringRadius,
-        style = Stroke(width = 1.dp.toPx())
-    )
+    drawCircle(color = Color.White, radius = ringRadius, style = Stroke(width = 1.dp.toPx()))
 
     // Ticks every 2°
     for (deg in 0 until 360 step 2) {
@@ -85,20 +67,21 @@ fun DrawScope.drawDialFace(heading: Float) {
                 color = Color.White,
                 start = Offset(center.x, center.y - ringRadius),
                 end = Offset(center.x, center.y - ringRadius + length),
-                strokeWidth = width
+                strokeWidth = width,
             )
         }
     }
 
     // Number labels outside the ring
     val outerLabelRadius = outerRadius * 0.96f
-    val numberPaint = Paint().apply {
-        color = android.graphics.Color.WHITE
-        textAlign = Paint.Align.CENTER
-        typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-        textSize = 13.dp.toPx()
-        isAntiAlias = true
-    }
+    val numberPaint =
+        Paint().apply {
+            color = android.graphics.Color.WHITE
+            textAlign = Paint.Align.CENTER
+            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+            textSize = 13.dp.toPx()
+            isAntiAlias = true
+        }
 
     for (deg in 0 until 360 step 30) {
         val angleRad = Math.toRadians(deg.toDouble() - 90.0)
@@ -114,13 +97,14 @@ fun DrawScope.drawDialFace(heading: Float) {
 
     // Cardinal letters
     val innerLabelRadius = ringRadius - 40.dp.toPx()
-    val cardinalPaint = Paint().apply {
-        color = android.graphics.Color.WHITE
-        textAlign = Paint.Align.CENTER
-        typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-        textSize = 22.dp.toPx()
-        isAntiAlias = true
-    }
+    val cardinalPaint =
+        Paint().apply {
+            color = android.graphics.Color.WHITE
+            textAlign = Paint.Align.CENTER
+            typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+            textSize = 22.dp.toPx()
+            isAntiAlias = true
+        }
 
     for ((deg, label) in cardinals) {
         val angleRad = Math.toRadians(deg.toDouble() - 90.0)
@@ -139,13 +123,14 @@ fun DrawScope.drawDialFace(heading: Float) {
     val arrowTip = center.y - outerRadius * 0.90f
     val arrowHalfW = 6.dp.toPx()
     drawPath(
-        path = Path().apply {
-            moveTo(center.x, arrowTip)
-            lineTo(center.x - arrowHalfW, arrowBase)
-            lineTo(center.x + arrowHalfW, arrowBase)
-            close()
-        },
-        color = Color(0xFFFF3B30)
+        path =
+            Path().apply {
+                moveTo(center.x, arrowTip)
+                lineTo(center.x - arrowHalfW, arrowBase)
+                lineTo(center.x + arrowHalfW, arrowBase)
+                close()
+            },
+        color = Color(0xFFFF3B30),
     )
 }
 
@@ -154,16 +139,13 @@ fun DrawScope.drawDialCenter() {
         color = Color.White.copy(alpha = 0.5f),
         start = Offset(center.x, center.y - 40.dp.toPx()),
         end = Offset(center.x, center.y + 40.dp.toPx()),
-        strokeWidth = 1.dp.toPx()
+        strokeWidth = 1.dp.toPx(),
     )
     drawLine(
         color = Color.White.copy(alpha = 0.5f),
         start = Offset(center.x - 40.dp.toPx(), center.y),
         end = Offset(center.x + 40.dp.toPx(), center.y),
-        strokeWidth = 1.dp.toPx()
+        strokeWidth = 1.dp.toPx(),
     )
-    drawCircle(
-        color = Color.White.copy(alpha = 0.2f),
-        radius = 18.dp.toPx()
-    )
+    drawCircle(color = Color.White.copy(alpha = 0.2f), radius = 18.dp.toPx())
 }

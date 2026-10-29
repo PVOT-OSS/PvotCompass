@@ -12,11 +12,14 @@ plugins {
 }
 
 val toml = rootProject.file("gradle/libs.versions.toml").readText()
-val playServicesLocationVersion: String? = if (toml.contains("play-services-location")) {
-    toml.lines()
-        .firstOrNull { it.trimStart().startsWith("playServicesLocation") }
-        ?.substringAfter('"')?.substringBefore('"')
-} else null
+val playServicesLocationVersion: String? =
+    if (toml.contains("play-services-location")) {
+        toml
+            .lines()
+            .firstOrNull { it.trimStart().startsWith("playServicesLocation") }
+            ?.substringAfter('"')
+            ?.substringBefore('"')
+    } else null
 
 val versionMajor = rootProject.extra["versionMajor"] as Int
 val versionMinor = rootProject.extra["versionMinor"] as Int
@@ -26,9 +29,7 @@ val computedVersionName = rootProject.extra["computedVersionName"] as String
 
 android {
     namespace = "org.prauga.compass"
-    compileSdk {
-        version = release(37)
-    }
+    compileSdk { version = release(37) }
 
     defaultConfig {
         applicationId = "org.prauga.compass"
@@ -50,7 +51,7 @@ android {
             isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
         }
     }
@@ -81,14 +82,11 @@ abstract class CopyApk : DefaultTask() {
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val input: DirectoryProperty
 
-    @get:OutputDirectory
-    abstract val output: DirectoryProperty
+    @get:OutputDirectory abstract val output: DirectoryProperty
 
-    @get:Internal
-    abstract val builtArtifactsLoader: Property<BuiltArtifactsLoader>
+    @get:Internal abstract val builtArtifactsLoader: Property<BuiltArtifactsLoader>
 
-    @get:Input
-    abstract val baseName: Property<String>
+    @get:Input abstract val baseName: Property<String>
 
     @TaskAction
     fun taskAction() {
@@ -96,8 +94,9 @@ abstract class CopyApk : DefaultTask() {
         outputDir.deleteRecursively()
         outputDir.mkdirs()
 
-        val builtArtifacts = builtArtifactsLoader.get().load(input.get())
-            ?: throw GradleException("Cannot load APKs")
+        val builtArtifacts =
+            builtArtifactsLoader.get().load(input.get())
+                ?: throw GradleException("Cannot load APKs")
         builtArtifacts.elements.forEach { artifact ->
             File(artifact.outputFile).copyTo(File(outputDir, "${baseName.get()}.apk"))
         }
@@ -106,15 +105,17 @@ abstract class CopyApk : DefaultTask() {
 
 androidComponents {
     onVariants { variant ->
-        val flavorName = when (variant.flavorName) {
-            "foss" -> "fdroid"
-            else -> variant.flavorName
-        }
-        val copyApk = tasks.register<CopyApk>("copy${variant.name.replaceFirstChar { it.uppercase() }}Apk") {
-            output.set(layout.buildDirectory.dir("outputs/apk/renamed/${variant.name}"))
-            builtArtifactsLoader.set(variant.artifacts.getBuiltArtifactsLoader())
-            baseName.set("PvotCompass-v$computedVersionName-${variant.buildType}-$flavorName")
-        }
+        val flavorName =
+            when (variant.flavorName) {
+                "foss" -> "fdroid"
+                else -> variant.flavorName
+            }
+        val copyApk =
+            tasks.register<CopyApk>("copy${variant.name.replaceFirstChar { it.uppercase() }}Apk") {
+                output.set(layout.buildDirectory.dir("outputs/apk/renamed/${variant.name}"))
+                builtArtifactsLoader.set(variant.artifacts.getBuiltArtifactsLoader())
+                baseName.set("PvotCompass-v$computedVersionName-${variant.buildType}-$flavorName")
+            }
         variant.artifacts.use(copyApk).wiredWith { it.input }.toListenTo(SingleArtifact.APK)
     }
 }
@@ -128,7 +129,6 @@ dependencies {
     playServicesLocationVersion?.let {
         add("gmsImplementation", "com.google.android.gms:play-services-location:$it")
     }
-
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

@@ -21,21 +21,23 @@ class LocationProviderImpl(context: Context) : LocationProvider {
 
     @SuppressLint("MissingPermission")
     override fun start(onLocation: (lat: Double, lng: Double, alt: Double?) -> Unit) {
-        val request = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 5000L)
-            .setMinUpdateIntervalMillis(2000L)
-            .build()
+        val request =
+            LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 5000L)
+                .setMinUpdateIntervalMillis(2000L)
+                .build()
 
-        val cb = object : LocationCallback() {
-            override fun onLocationResult(result: LocationResult) {
-                result.lastLocation?.let { loc ->
-                    onLocation(
-                        loc.latitude,
-                        loc.longitude,
-                        if (loc.hasAltitude()) loc.altitude else null
-                    )
+        val cb =
+            object : LocationCallback() {
+                override fun onLocationResult(result: LocationResult) {
+                    result.lastLocation?.let { loc ->
+                        onLocation(
+                            loc.latitude,
+                            loc.longitude,
+                            if (loc.hasAltitude()) loc.altitude else null,
+                        )
+                    }
                 }
             }
-        }
         callback = cb
         fusedClient.requestLocationUpdates(request, cb, Looper.getMainLooper())
     }

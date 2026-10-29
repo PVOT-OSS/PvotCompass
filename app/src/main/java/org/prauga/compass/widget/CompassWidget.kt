@@ -66,9 +66,8 @@ class CompassWidget : GlanceAppWidget() {
         val dial = renderCompassDial(context)
         provideContent {
             val revision = currentState<Preferences>()[REVISION_KEY] ?: 0
-            val location = remember(revision) {
-                if (BuildConfig.SHOW_LOCATION_INFO) store.read() else null
-            }
+            val location =
+                remember(revision) { if (BuildConfig.SHOW_LOCATION_INFO) store.read() else null }
             CompassWidgetContent(dial, location)
         }
     }
@@ -76,7 +75,8 @@ class CompassWidget : GlanceAppWidget() {
     companion object {
         suspend fun refresh(context: Context) {
             val widget = CompassWidget()
-            for (glanceId in GlanceAppWidgetManager(context).getGlanceIds(CompassWidget::class.java)) {
+            for (glanceId in
+                GlanceAppWidgetManager(context).getGlanceIds(CompassWidget::class.java)) {
                 updateAppWidgetState(context, glanceId) { prefs ->
                     prefs[REVISION_KEY] = (prefs[REVISION_KEY] ?: 0) + 1
                 }
@@ -91,36 +91,39 @@ private fun CompassWidgetContent(dial: Bitmap, location: LastLocation?) {
     val size = LocalSize.current
     val showDetails = size.width >= MIN_DETAILS_WIDTH
     val stacked = showDetails && size.height > size.width
-    val modifier = GlanceModifier
-        .fillMaxSize()
-        .appWidgetBackground()
-        .background(Color.Black)
-        .cornerRadius(16.dp)
-        .clickable(actionStartActivity<MainActivity>())
-        .padding(12.dp)
+    val modifier =
+        GlanceModifier.fillMaxSize()
+            .appWidgetBackground()
+            .background(Color.Black)
+            .cornerRadius(16.dp)
+            .clickable(actionStartActivity<MainActivity>())
+            .padding(12.dp)
 
     when {
-        stacked -> Column(
-            modifier = modifier,
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            CompassRose(dial, min(size.width, size.height / 2) - 24.dp)
-            Spacer(modifier = GlanceModifier.height(12.dp))
-            CompassDetails(location, Alignment.CenterHorizontally)
-        }
-        showDetails -> Row(
-            modifier = modifier,
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            CompassRose(dial, min(size.height, size.width / 2) - 24.dp)
-            Spacer(modifier = GlanceModifier.width(12.dp))
-            CompassDetails(location, Alignment.Start)
-        }
-        else -> Box(modifier = modifier, contentAlignment = Alignment.Center) {
-            CompassRose(dial, min(size.width, size.height) - 24.dp)
-        }
+        stacked ->
+            Column(
+                modifier = modifier,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                CompassRose(dial, min(size.width, size.height / 2) - 24.dp)
+                Spacer(modifier = GlanceModifier.height(12.dp))
+                CompassDetails(location, Alignment.CenterHorizontally)
+            }
+        showDetails ->
+            Row(
+                modifier = modifier,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                CompassRose(dial, min(size.height, size.width / 2) - 24.dp)
+                Spacer(modifier = GlanceModifier.width(12.dp))
+                CompassDetails(location, Alignment.Start)
+            }
+        else ->
+            Box(modifier = modifier, contentAlignment = Alignment.Center) {
+                CompassRose(dial, min(size.width, size.height) - 24.dp)
+            }
     }
 }
 
@@ -129,22 +132,21 @@ private fun CompassRose(dial: Bitmap, size: Dp) {
     Image(
         provider = ImageProvider(dial),
         contentDescription = LocalContext.current.getString(R.string.widget_open_compass),
-        modifier = GlanceModifier.size(size.coerceAtLeast(24.dp))
+        modifier = GlanceModifier.size(size.coerceAtLeast(24.dp)),
     )
 }
 
 @Composable
 private fun CompassDetails(location: LastLocation?, alignment: Alignment.Horizontal) {
     val context = LocalContext.current
-    val primary = TextStyle(
-        color = ColorProvider(Color.White),
-        fontSize = 14.sp,
-        fontWeight = FontWeight.Bold
-    )
-    val secondary = TextStyle(
-        color = ColorProvider(Color.White.copy(alpha = 0.7f)),
-        fontSize = 12.sp
-    )
+    val primary =
+        TextStyle(
+            color = ColorProvider(Color.White),
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold,
+        )
+    val secondary =
+        TextStyle(color = ColorProvider(Color.White.copy(alpha = 0.7f)), fontSize = 12.sp)
 
     Column(horizontalAlignment = alignment) {
         if (location == null) {
@@ -152,12 +154,8 @@ private fun CompassDetails(location: LastLocation?, alignment: Alignment.Horizon
         } else {
             Text(text = toDms(location.latitude, "N", "S"), style = primary)
             Text(text = toDms(location.longitude, "E", "W"), style = primary)
-            location.placeName?.let {
-                Text(text = it, style = secondary, maxLines = 1)
-            }
-            location.altitude?.let {
-                Text(text = "${it.toInt()}m Elevation", style = secondary)
-            }
+            location.placeName?.let { Text(text = it, style = secondary, maxLines = 1) }
+            location.altitude?.let { Text(text = "${it.toInt()}m Elevation", style = secondary) }
         }
     }
 }

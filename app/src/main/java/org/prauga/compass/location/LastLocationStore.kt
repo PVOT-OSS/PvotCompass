@@ -12,7 +12,7 @@ data class LastLocation(
     val latitude: Double,
     val longitude: Double,
     val altitude: Double?,
-    val placeName: String?
+    val placeName: String?,
 )
 
 class LastLocationStore(context: Context) {
@@ -24,10 +24,11 @@ class LastLocationStore(context: Context) {
         return LastLocation(
             latitude = Double.fromBits(prefs.getLong(KEY_LATITUDE, 0L)),
             longitude = Double.fromBits(prefs.getLong(KEY_LONGITUDE, 0L)),
-            altitude = if (prefs.contains(KEY_ALTITUDE)) {
-                Double.fromBits(prefs.getLong(KEY_ALTITUDE, 0L))
-            } else null,
-            placeName = prefs.getString(KEY_PLACE_NAME, null)
+            altitude =
+                if (prefs.contains(KEY_ALTITUDE)) {
+                    Double.fromBits(prefs.getLong(KEY_ALTITUDE, 0L))
+                } else null,
+            placeName = prefs.getString(KEY_PLACE_NAME, null),
         )
     }
 

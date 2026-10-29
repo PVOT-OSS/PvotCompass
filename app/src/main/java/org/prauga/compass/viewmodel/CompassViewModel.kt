@@ -19,6 +19,7 @@ import android.view.Display
 import android.view.Surface
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import java.util.Locale
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,11 +29,9 @@ import org.prauga.compass.location.LastLocationStore
 import org.prauga.compass.location.LocationProvider
 import org.prauga.compass.location.LocationProviderImpl
 import org.prauga.compass.widget.CompassWidget
-import java.util.Locale
 
-class CompassViewModel(
-    application: Application
-) : AndroidViewModel(application), SensorEventListener {
+class CompassViewModel(application: Application) :
+    AndroidViewModel(application), SensorEventListener {
 
     private val sensorManager =
         application.getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -40,8 +39,7 @@ class CompassViewModel(
     private val displayManager =
         application.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
 
-    private val rotationSensor =
-        sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
+    private val rotationSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
 
     private val _heading = MutableStateFlow(0f)
     val heading: StateFlow<Float> = _heading
@@ -68,11 +66,7 @@ class CompassViewModel(
     private var lastWidgetUpdate = 0L
 
     fun start() {
-        sensorManager.registerListener(
-            this,
-            rotationSensor,
-            SensorManager.SENSOR_DELAY_UI
-        )
+        sensorManager.registerListener(this, rotationSensor, SensorManager.SENSOR_DELAY_UI)
     }
 
     @SuppressLint("MissingPermission")
@@ -93,8 +87,7 @@ class CompassViewModel(
     private fun reverseGeocode(lat: Double, lng: Double) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                @Suppress("DEPRECATION")
-                val addresses = geocoder.getFromLocation(lat, lng, 1)
+                @Suppress("DEPRECATION") val addresses = geocoder.getFromLocation(lat, lng, 1)
                 if (!addresses.isNullOrEmpty()) {
                     val addr = addresses[0]
                     val parts = listOfNotNull(addr.locality, addr.adminArea)
@@ -105,9 +98,7 @@ class CompassViewModel(
             } catch (_: Exception) {
                 // Geocoding unavailable
             }
-            lastLocationStore.write(
-                LastLocation(lat, lng, _altitude.value, _placeName.value)
-            )
+            lastLocationStore.write(LastLocation(lat, lng, _altitude.value, _placeName.value))
             val now = SystemClock.elapsedRealtime()
             if (lastWidgetUpdate == 0L || now - lastWidgetUpdate >= WIDGET_UPDATE_INTERVAL_MS) {
                 lastWidgetUpdate = now
@@ -120,12 +111,13 @@ class CompassViewModel(
         val rotationMatrix = FloatArray(9)
         SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values)
 
-        val (axisX, axisY) = when (displayManager.getDisplay(Display.DEFAULT_DISPLAY)?.rotation) {
-            Surface.ROTATION_90 -> SensorManager.AXIS_Y to SensorManager.AXIS_MINUS_X
-            Surface.ROTATION_180 -> SensorManager.AXIS_MINUS_X to SensorManager.AXIS_MINUS_Y
-            Surface.ROTATION_270 -> SensorManager.AXIS_MINUS_Y to SensorManager.AXIS_X
-            else -> SensorManager.AXIS_X to SensorManager.AXIS_Y
-        }
+        val (axisX, axisY) =
+            when (displayManager.getDisplay(Display.DEFAULT_DISPLAY)?.rotation) {
+                Surface.ROTATION_90 -> SensorManager.AXIS_Y to SensorManager.AXIS_MINUS_X
+                Surface.ROTATION_180 -> SensorManager.AXIS_MINUS_X to SensorManager.AXIS_MINUS_Y
+                Surface.ROTATION_270 -> SensorManager.AXIS_MINUS_Y to SensorManager.AXIS_X
+                else -> SensorManager.AXIS_X to SensorManager.AXIS_Y
+            }
         val remappedMatrix = FloatArray(9)
         SensorManager.remapCoordinateSystem(rotationMatrix, axisX, axisY, remappedMatrix)
 

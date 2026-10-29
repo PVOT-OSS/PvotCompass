@@ -8,7 +8,6 @@ package org.prauga.compass.screens
 import android.Manifest
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import org.prauga.compass.BuildConfig
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -47,6 +46,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.window.core.layout.WindowSizeClass
+import org.prauga.compass.BuildConfig
 import org.prauga.compass.components.CompassDial
 import org.prauga.compass.location.toDms
 import org.prauga.compass.viewmodel.CompassViewModel
@@ -61,20 +61,20 @@ fun CompassScreen(viewModel: CompassViewModel) {
     val longitude by viewModel.longitude.collectAsState()
     val placeName by viewModel.placeName.collectAsState()
     val showLocationInfo = BuildConfig.SHOW_LOCATION_INFO
-    val animatedHeading by animateFloatAsState(
-        targetValue = cumulativeHeading,
-        animationSpec = tween(durationMillis = 300, easing = LinearOutSlowInEasing)
-    )
+    val animatedHeading by
+        animateFloatAsState(
+            targetValue = cumulativeHeading,
+            animationSpec = tween(durationMillis = 300, easing = LinearOutSlowInEasing),
+        )
 
     // Location permission
     var locationGranted by rememberSaveable { mutableStateOf(false) }
     var locationRequested by rememberSaveable { mutableStateOf(false) }
-    val permissionLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        locationGranted = granted
-        if (granted) viewModel.startLocationUpdates()
-    }
+    val permissionLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            locationGranted = granted
+            if (granted) viewModel.startLocationUpdates()
+        }
 
     // Haptic feedback
     val haptic = LocalHapticFeedback.current
@@ -98,9 +98,7 @@ fun CompassScreen(viewModel: CompassViewModel) {
             }
         }
     }
-    DisposableEffect(Unit) {
-        onDispose { viewModel.stop() }
-    }
+    DisposableEffect(Unit) { onDispose { viewModel.stop() } }
 
     CompassLayout(
         dialHeading = animatedHeading,
@@ -109,7 +107,7 @@ fun CompassScreen(viewModel: CompassViewModel) {
         latitude = latitude,
         longitude = longitude,
         placeName = placeName,
-        altitude = altitude
+        altitude = altitude,
     )
 }
 
@@ -121,7 +119,7 @@ private fun CompassLayout(
     latitude: Double?,
     longitude: Double?,
     placeName: String?,
-    altitude: Double?
+    altitude: Double?,
 ) {
     val windowSizeClass = currentWindowAdaptiveInfoV2().windowSizeClass
     val compactHeight =
@@ -130,8 +128,9 @@ private fun CompassLayout(
         windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND)
     val expandedHeight =
         windowSizeClass.isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_EXPANDED_LOWER_BOUND)
-    val large = !compactHeight &&
-        windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
+    val large =
+        !compactHeight &&
+            windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
     val sideBySide = compactHeight || (expandedWidth && !expandedHeight)
 
     val maxDialSize = if (large) 520.dp else 360.dp
@@ -139,34 +138,33 @@ private fun CompassLayout(
     val detailFontSize = if (large) 22.sp else 18.sp
 
     BoxWithConstraints(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black)
-            .safeDrawingPadding()
+        modifier = Modifier.fillMaxSize().background(Color.Black).safeDrawingPadding()
     ) {
-        val dialSize = if (sideBySide) {
-            minOf(maxHeight * 0.85f, maxWidth * 0.5f, maxDialSize)
-        } else {
-            minOf(maxWidth * 0.9f, maxHeight * 0.6f, maxDialSize)
-        }
-        val readings = @Composable {
-            CompassReadings(
-                heading = heading,
-                showLocation = showLocation,
-                latitude = latitude,
-                longitude = longitude,
-                placeName = placeName,
-                altitude = altitude,
-                headingFontSize = headingFontSize,
-                detailFontSize = detailFontSize
-            )
-        }
+        val dialSize =
+            if (sideBySide) {
+                minOf(maxHeight * 0.85f, maxWidth * 0.5f, maxDialSize)
+            } else {
+                minOf(maxWidth * 0.9f, maxHeight * 0.6f, maxDialSize)
+            }
+        val readings =
+            @Composable {
+                CompassReadings(
+                    heading = heading,
+                    showLocation = showLocation,
+                    latitude = latitude,
+                    longitude = longitude,
+                    placeName = placeName,
+                    altitude = altitude,
+                    headingFontSize = headingFontSize,
+                    detailFontSize = detailFontSize,
+                )
+            }
 
         if (sideBySide) {
             Row(
                 modifier = Modifier.fillMaxSize(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
             ) {
                 CompassDial(heading = dialHeading, modifier = Modifier.size(dialSize))
                 readings()
@@ -175,7 +173,7 @@ private fun CompassLayout(
             Column(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 CompassDial(heading = dialHeading, modifier = Modifier.size(dialSize))
                 Spacer(modifier = Modifier.height(24.dp))
@@ -194,7 +192,7 @@ private fun CompassReadings(
     placeName: String?,
     altitude: Double?,
     headingFontSize: TextUnit,
-    detailFontSize: TextUnit
+    detailFontSize: TextUnit,
 ) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
@@ -202,7 +200,7 @@ private fun CompassReadings(
             color = Color.White,
             fontSize = headingFontSize,
             fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
         )
         if (showLocation) {
             // Coordinates in DMS
@@ -211,7 +209,7 @@ private fun CompassReadings(
                     text = "${toDms(latitude, "N", "S")} ${toDms(longitude, "E", "W")}",
                     color = Color.White.copy(alpha = 0.7f),
                     fontSize = detailFontSize,
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
                 )
             }
             // Place name
@@ -220,17 +218,16 @@ private fun CompassReadings(
                     text = it,
                     color = Color.White.copy(alpha = 0.7f),
                     fontSize = detailFontSize,
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
                 )
             }
             // Sea level
-            val altText =
-                altitude?.let { "${it.toInt()}m Elevation" } ?: "Acquiring altitude…"
+            val altText = altitude?.let { "${it.toInt()}m Elevation" } ?: "Acquiring altitude…"
             Text(
                 text = altText,
                 color = Color.White.copy(alpha = 0.7f),
                 fontSize = detailFontSize,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
             )
         }
     }
@@ -249,7 +246,7 @@ private fun CompassLayoutPreview() {
         latitude = 51.4779,
         longitude = -0.0015,
         placeName = "Greenwich, England",
-        altitude = 46.0
+        altitude = 46.0,
     )
 }
 

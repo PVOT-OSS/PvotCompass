@@ -20,20 +20,17 @@ class LocationProviderImpl(context: Context) : LocationProvider {
 
     @SuppressLint("MissingPermission")
     override fun start(onLocation: (lat: Double, lng: Double, alt: Double?) -> Unit) {
-        val provider = when {
-            locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ->
-                LocationManager.GPS_PROVIDER
-            locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER) ->
-                LocationManager.NETWORK_PROVIDER
-            else -> return
-        }
+        val provider =
+            when {
+                locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ->
+                    LocationManager.GPS_PROVIDER
+                locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER) ->
+                    LocationManager.NETWORK_PROVIDER
+                else -> return
+            }
 
         val lst = LocationListener { loc: Location ->
-            onLocation(
-                loc.latitude,
-                loc.longitude,
-                if (loc.hasAltitude()) loc.altitude else null
-            )
+            onLocation(loc.latitude, loc.longitude, if (loc.hasAltitude()) loc.altitude else null)
         }
         listener = lst
         locationManager.requestLocationUpdates(provider, 2000L, 0f, lst, Looper.getMainLooper())
