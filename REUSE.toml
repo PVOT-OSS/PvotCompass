@@ -1,0 +1,25 @@
+# SPDX-FileCopyrightText: Saalim Quadri <danascape@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+version = 1
+SPDX-PackageName = "PvotCompass"
+SPDX-PackageSupplier = "Saalim Quadri <danascape@gmail.com>"
+SPDX-PackageDownloadLocation = "https://github.com/PVOT-OSS/PvotCompass"
+
+[[annotations]]
+path = [".github/workflows/**", ".gitignore", "app/.gitignore"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "Saalim Quadri <danascape@gmail.com>"
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+[[annotations]]
+path = ["gradlew", "gradlew.bat", "gradle/wrapper/**"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2007-2023 Gradle, Inc."
+SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = "app/src/main/res/mipmap-*/ic_launcher*.webp"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "Saalim Quadri <danascape@gmail.com>"
+SPDX-License-Identifier = "GPL-3.0-or-later"

@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: Saalim Quadri <danascape@gmail.com>
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 import com.android.build.api.artifact.SingleArtifact
 import com.android.build.api.variant.BuiltArtifactsLoader
 

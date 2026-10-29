@@ -1,3 +1,8 @@
+<!--
+     SPDX-FileCopyrightText: Saalim Quadri <danascape@gmail.com>
+     SPDX-License-Identifier: GPL-3.0-or-later
+-->
+
 <resources>
     <string name="app_name">Compass</string>
     <string name="widget_description">Opens the compass</string>

@@ -1,3 +1,8 @@
+/*
+ * SPDX-FileCopyrightText: Saalim Quadri <danascape@gmail.com>
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
 package org.prauga.compass.location
 
 fun toDms(decimal: Double, positive: String, negative: String): String {
