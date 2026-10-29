@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.window.core.layout.WindowSizeClass
 import org.prauga.compass.components.CompassDial
+import org.prauga.compass.location.toDms
 import org.prauga.compass.viewmodel.CompassViewModel
 
 @Composable
@@ -250,14 +251,4 @@ private fun CompassLayoutPreview() {
 private fun direction(deg: Float): String {
     val dirs = listOf("N", "NE", "E", "SE", "S", "SW", "W", "NW")
     return dirs[((deg + 22.5f) / 45f).toInt() % 8]
-}
-
-private fun toDms(decimal: Double, positive: String, negative: String): String {
-    val dir = if (decimal >= 0) positive else negative
-    val abs = kotlin.math.abs(decimal)
-    val degrees = abs.toInt()
-    val minutesFull = (abs - degrees) * 60
-    val minutes = minutesFull.toInt()
-    val seconds = ((minutesFull - minutes) * 60).toInt()
-    return "$degrees°$minutes'$seconds\"$dir"
 }

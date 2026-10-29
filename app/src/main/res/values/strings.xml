@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Compass</string>
+    <string name="widget_description">Opens the compass</string>
+    <string name="widget_open_compass">Open compass</string>
 </resources>

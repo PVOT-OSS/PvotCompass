@@ -9,6 +9,7 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.hardware.display.DisplayManager
 import android.location.Geocoder
+import android.os.SystemClock
 import android.view.Display
 import android.view.Surface
 import androidx.lifecycle.AndroidViewModel
@@ -21,6 +22,7 @@ import org.prauga.compass.location.LastLocation
 import org.prauga.compass.location.LastLocationStore
 import org.prauga.compass.location.LocationProvider
 import org.prauga.compass.location.LocationProviderImpl
+import org.prauga.compass.widget.CompassWidget
 import java.util.Locale
 
 class CompassViewModel(
@@ -58,6 +60,7 @@ class CompassViewModel(
     private val locationProvider: LocationProvider = LocationProviderImpl(application)
     private val geocoder = Geocoder(application, Locale.getDefault())
     private val lastLocationStore = LastLocationStore(application)
+    private var lastWidgetUpdate = 0L
 
     fun start() {
         sensorManager.registerListener(
@@ -100,6 +103,11 @@ class CompassViewModel(
             lastLocationStore.write(
                 LastLocation(lat, lng, _altitude.value, _placeName.value)
             )
+            val now = SystemClock.elapsedRealtime()
+            if (lastWidgetUpdate == 0L || now - lastWidgetUpdate >= WIDGET_UPDATE_INTERVAL_MS) {
+                lastWidgetUpdate = now
+                CompassWidget.refresh(getApplication())
+            }
         }
     }
 
@@ -134,4 +142,8 @@ class CompassViewModel(
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+
+    private companion object {
+        const val WIDGET_UPDATE_INTERVAL_MS = 60_000L
+    }
 }
