@@ -17,6 +17,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import org.prauga.compass.location.LastLocation
+import org.prauga.compass.location.LastLocationStore
 import org.prauga.compass.location.LocationProvider
 import org.prauga.compass.location.LocationProviderImpl
 import java.util.Locale
@@ -55,6 +57,7 @@ class CompassViewModel(
 
     private val locationProvider: LocationProvider = LocationProviderImpl(application)
     private val geocoder = Geocoder(application, Locale.getDefault())
+    private val lastLocationStore = LastLocationStore(application)
 
     fun start() {
         sensorManager.registerListener(
@@ -94,6 +97,9 @@ class CompassViewModel(
             } catch (_: Exception) {
                 // Geocoding unavailable
             }
+            lastLocationStore.write(
+                LastLocation(lat, lng, _altitude.value, _placeName.value)
+            )
         }
     }
 
